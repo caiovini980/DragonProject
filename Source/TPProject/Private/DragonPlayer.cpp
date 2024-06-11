@@ -12,6 +12,7 @@
 #include "Animation/AnimMontage.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/AttributeComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -43,6 +44,7 @@ ADragonPlayer::ADragonPlayer()
 	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	PlayerCamera->SetupAttachment(CameraArm);
 
+	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
 	/**/
 }
 
@@ -50,16 +52,18 @@ ADragonPlayer::ADragonPlayer()
 void ADragonPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	const APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (PlayerController)
+	if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-		if (Subsystem)
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(PlayerMappingContext, 0);
 		}
 	}
+}
+
+void ADragonPlayer::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 }
 
 void ADragonPlayer::Move(const FInputActionValue& Value)
@@ -86,15 +90,13 @@ void ADragonPlayer::Look(const FInputActionValue& Value)
 
 void ADragonPlayer::Run(const FInputActionValue& Value)
 {
-	const bool IsRunning = Value.Get<bool>();
-
-	if (IsRunning)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-		return;
-	}
-
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	// if (const bool IsRunning = Value.Get<bool>())
+	// {
+	// 	GetCharacterMovement()->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+	// 	return;
+	// }
+	//
+	// GetCharacterMovement()->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
 }
 
 void ADragonPlayer::ExecuteJump(const FInputActionValue& Value)
@@ -149,32 +151,31 @@ void ADragonPlayer::HandleInteraction()
 	for (const auto OverlappingActor : OverlappingActors)
 	{
 		AInteractibleBase* Interactable{ Cast<AInteractibleBase>(OverlappingActor) };
-		if (Interactable)
+		if (!Interactable) { return; }
+
+		if (Interactable->GetInteractableType() == EInteractableType::EIT_Grabbable)
 		{
-			if (Interactable->GetInteractableType() == EInteractableType::EIT_Grabbable)
-			{
-				// HOLD ITEM
-				IsHoldingObject = true;
-			}
-			
-			if (Interactable->GetInteractableType() == EInteractableType::EIT_Activable)
-			{
-				// ACTIVATE ITEM
-			}
-
-			if (Interactable->GetInteractableType() == EInteractableType::EIT_Movable)
-			{
-				// MOVE ITEM
-			}
-
-			if (Interactable->GetInteractableType() == EInteractableType::EIT_Pressable)
-			{
-				// PRESS ITEM
-			}
-
-			Interactable->Interact();
-			break;
+			// HOLD ITEM
+			IsHoldingObject = true;
 		}
+			
+		else if (Interactable->GetInteractableType() == EInteractableType::EIT_Activable)
+		{
+			// ACTIVATE ITEM
+		}
+
+		else if (Interactable->GetInteractableType() == EInteractableType::EIT_Movable)
+		{
+			// MOVE ITEM
+		}
+
+		else if (Interactable->GetInteractableType() == EInteractableType::EIT_Pressable)
+		{
+			// PRESS ITEM
+		}
+
+		Interactable->Interact();
+		break;
 	}
 }
 
@@ -188,9 +189,8 @@ void ADragonPlayer::Tick(float DeltaTime)
 void ADragonPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-	if (EnhancedInputComponent)
+	
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// MOVE
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADragonPlayer::Move);

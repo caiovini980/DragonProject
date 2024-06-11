@@ -17,6 +17,8 @@ class UInputMappingContext;
 class UInputAction;
 class UAnimMontage;
 
+class UAttributeComponent;
+
 UCLASS()
 class TPPROJECT_API ADragonPlayer : public ACharacter
 {
@@ -30,6 +32,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
 
 	// VARIABLES
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
@@ -47,6 +51,10 @@ protected:
 	UStaticMeshComponent* HoldObjectPosition;
 	UPROPERTY(VisibleDefaultsOnly)
 	UPhysicsConstraintComponent* PhysicsConstraintComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UAttributeComponent* AttributeComponent;
+	
 
 	// INPUTS
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -72,12 +80,6 @@ protected:
 
 private:
 	// VARIABLES
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float WalkSpeed{ 0 };
-
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float RunSpeed{ 0 };
-
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 	bool bIsJumping{ false };
 
