@@ -5,14 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "Interfaces/IInteractable.h"
 #include "DragonPlayer.generated.h"
 
 class UPhysicsConstraintComponent;
-class UCharacterMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
-
+class UCharacterMovementComponent;
 class UInputMappingContext;
 class UInputAction;
 class UAnimMontage;
@@ -32,7 +30,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void PostInitializeComponents() override;
 
 	// VARIABLES
@@ -51,6 +48,9 @@ protected:
 	UStaticMeshComponent* HoldObjectPosition;
 	UPROPERTY(VisibleDefaultsOnly)
 	UPhysicsConstraintComponent* PhysicsConstraintComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UCharacterMovementComponent* CharacterMovementComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* AttributeComponent;

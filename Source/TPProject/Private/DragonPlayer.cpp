@@ -14,8 +14,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/AttributeComponent.h"
 #include "GameFramework/Actor.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Interactibles/InteractibleBase.h"
 
 /**/
@@ -45,6 +45,8 @@ ADragonPlayer::ADragonPlayer()
 	PlayerCamera->SetupAttachment(CameraArm);
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
+	CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
+
 	/**/
 }
 
@@ -130,10 +132,10 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 	if (bCanAttack)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	
-		if (AnimInstance && AttackMontage)
+		
+		if (AnimInstance && AttackMontage && CharacterMovementComponent)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ATTACKING!"));
+			CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
 			AnimInstance->Montage_Play(AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName("Attack1"), AttackMontage);
 		}
