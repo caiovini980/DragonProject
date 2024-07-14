@@ -80,6 +80,9 @@ protected:
 
 private:
 	// VARIABLES
+	UPROPERTY(VisibleAnywhere, Category = "Joystick")
+	float RunningThreshold{ 0.85 };
+	
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 	bool bIsJumping{ false };
 
@@ -95,6 +98,8 @@ private:
 	
 	// METHODS
 	void HandleInteraction();
+
+	void HandleJoystickInput(const FVector2D& MovementVector, float& XMovementPercent, float& YMovementPercent);
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

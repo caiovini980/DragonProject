@@ -71,15 +71,43 @@ void ADragonPlayer::PostInitializeComponents()
 void ADragonPlayer::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
+	float XMovementPercent = MovementVector.X;
+	float YMovementPercent = MovementVector.Y;
 
+	HandleJoystickInput(MovementVector, XMovementPercent, YMovementPercent);
+	
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0.0f, Rotation.Yaw, 0.0f);
 
 	const FVector Forward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	AddMovementInput(Forward, MovementVector.Y);
-	AddMovementInput(Right, MovementVector.X);
+	AddMovementInput(Forward, YMovementPercent);
+	AddMovementInput(Right, XMovementPercent);
+}
+
+void ADragonPlayer::HandleJoystickInput(const FVector2D& MovementVector, float& XMovementPercent, float& YMovementPercent)
+{
+	if (FMath::Abs(MovementVector.X) > 1)
+	{
+		XMovementPercent = MovementVector.X / 100;
+	}
+
+	if (FMath::Abs(MovementVector.Y) > 1)
+	{
+		YMovementPercent = MovementVector.Y / 100;
+	}
+
+	// handle running threshold on joystick
+	if (FMath::Abs(XMovementPercent) >= RunningThreshold)
+	{
+		XMovementPercent = MovementVector.X;
+	}
+
+	if (FMath::Abs(YMovementPercent) >= RunningThreshold)
+	{
+		YMovementPercent = MovementVector.Y;
+	}
 }
 
 void ADragonPlayer::Look(const FInputActionValue& Value)
@@ -110,6 +138,7 @@ void ADragonPlayer::ExecuteJump(const FInputActionValue& Value)
 		return;
 	}
 
+	if (CharacterMovementComponent->IsMovingOnGround())
 	UE_LOG(LogTemp, Warning, TEXT("Started jump"));
 	Super::Jump();
 }
