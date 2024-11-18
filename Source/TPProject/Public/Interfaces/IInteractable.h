@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "ENUMs/EInteractableType.h"
 #include "IInteractable.generated.h"
 
 // This class does not need to be modified.
@@ -25,5 +24,5 @@ class TPPROJECT_API IInteractable
 	
 public:
 	virtual void Interact() = 0;
-	bool bIsPortable { false };
+	bool bCanBeCarried { false };
 };

@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "DragonPlayer.generated.h"
 
+class ACarriableObject;
+class UBackpackComponent;
 class UPhysicsConstraintComponent;
 class USpringArmComponent;
 class UCameraComponent;
@@ -33,29 +35,28 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 	// VARIABLES
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
-	bool IsHoldingObject{ false };
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	FVector HoldPositionOffset{ FVector(50.f, 0.f, 0.f) };
 	
 	// COMPONENTS
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="Components")
 	UCameraComponent* PlayerCamera;
-	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* CameraArm;
-	UPROPERTY(VisibleDefaultsOnly)
-	UStaticMeshComponent* HoldObjectPosition;
-	UPROPERTY(VisibleDefaultsOnly)
-	UPhysicsConstraintComponent* PhysicsConstraintComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	UCharacterMovementComponent* CharacterMovementComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	UAttributeComponent* AttributeComponent;
 	
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	USpringArmComponent* CameraArm;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Components")
+	UPhysicsConstraintComponent* PhysicsConstraintComponent;
+	
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UCharacterMovementComponent* CharacterMovementComponent;
+	
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UAttributeComponent* AttributeComponent;
 
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UBackpackComponent* BackpackComponent;
+	
 	// INPUTS
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputMappingContext* PlayerMappingContext;
@@ -70,10 +71,10 @@ protected:
 	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* RunAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* InteractAction;
+	
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* CarryAction;
 	
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AttackAction;
@@ -97,14 +98,14 @@ private:
 	UAnimMontage* AttackMontage;
 	
 	// METHODS
-	void HandleInteraction();
-
-	void HandleJoystickInput(const FVector2D& MovementVector, float& XMovementPercent, float& YMovementPercent);
+	void HandleJoystickInput(const FVector2D& MovementVector, float& XMovementPercent, float& YMovementPercent) const;
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Run(const FInputActionValue& Value);
 	void ExecuteJump(const FInputActionValue& Value);
-	void Interact(const FInputActionValue& Value);
+	// void Interact(const FInputActionValue& Value); TODO Refactor this
+	void CarryObject(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
+
+	void CarryObject(ACarriableObject* objectToCarry) const;
 };

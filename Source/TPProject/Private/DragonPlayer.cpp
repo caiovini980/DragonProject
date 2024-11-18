@@ -3,20 +3,20 @@
 
 #include "DragonPlayer.h"
 
+#include "CarriableObject.h"
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Math/Quat.h"
 #include "Math/Vector.h"
 
 #include "Animation/AnimMontage.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/AttributeComponent.h"
+#include "Components/BackpackComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Interactibles/InteractibleBase.h"
 
 /**/
 // Sets default values
@@ -46,8 +46,8 @@ ADragonPlayer::ADragonPlayer()
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
 	CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
-
-	/**/
+	
+	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("Backpack"));
 }
 
 // Called when the game starts or when spawned
@@ -86,7 +86,7 @@ void ADragonPlayer::Move(const FInputActionValue& Value)
 	AddMovementInput(Right, XMovementPercent);
 }
 
-void ADragonPlayer::HandleJoystickInput(const FVector2D& MovementVector, float& XMovementPercent, float& YMovementPercent)
+void ADragonPlayer::HandleJoystickInput(const FVector2D& MovementVector, float& XMovementPercent, float& YMovementPercent) const
 {
 	if (FMath::Abs(MovementVector.X) > 1)
 	{
@@ -118,17 +118,6 @@ void ADragonPlayer::Look(const FInputActionValue& Value)
 	AddControllerYawInput(lookVector.X);
 }
 
-void ADragonPlayer::Run(const FInputActionValue& Value)
-{
-	// if (const bool IsRunning = Value.Get<bool>())
-	// {
-	// 	GetCharacterMovement()->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
-	// 	return;
-	// }
-	//
-	// GetCharacterMovement()->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
-}
-
 void ADragonPlayer::ExecuteJump(const FInputActionValue& Value)
 {
 	if (Super::IsJumpProvidingForce())
@@ -143,19 +132,44 @@ void ADragonPlayer::ExecuteJump(const FInputActionValue& Value)
 	Super::Jump();
 }
 
-void ADragonPlayer::Interact(const FInputActionValue& Value)
+void ADragonPlayer::CarryObject(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("INTERACT INPUT PRESSED"));
-	
-	if (IsHoldingObject)
+	if (!BackpackComponent)
 	{
-		IsHoldingObject = false;
+		UE_LOG(LogTemp, Error, TEXT("Backpack Component is NULL on DragonPlayer.cpp"));
 		return;
 	}
 	
-	HandleInteraction();
-}
+	TArray<AActor*> OverlappingActors;
+	GetMesh()->GetOverlappingActors(OverlappingActors);
 
+	if (OverlappingActors.IsEmpty())
+	{
+		if (UStaticMeshComponent* carriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0)))
+		{
+			GetWorld()->SpawnActor<ACarriableObject>(GetActorLocation() + HoldPositionOffset, GetActorRotation());
+			carriedMesh->SetStaticMesh(nullptr);
+			CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
+			BackpackComponent->RemoveFromBackpack();
+		}
+	}
+	
+	for (const auto OverlappingActor : OverlappingActors)
+	{
+		if (ACarriableObject* carriableObject = Cast<ACarriableObject>(OverlappingActor))
+		{
+			if (!BackpackComponent->CorrectlyAddedToBackpack(carriableObject))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Item wasn't attached to player's backpack"));
+				return;
+			}
+ 
+			// add to top of the player
+			UE_LOG(LogTemp, Warning, TEXT("Trying to attach object to player!"))
+			CarryObject(carriableObject);
+		}
+	}
+}
 void ADragonPlayer::Attack(const FInputActionValue& Value)
 {
 	if (bCanAttack)
@@ -171,42 +185,13 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 	}
 }
 
-void ADragonPlayer::HandleInteraction()
+void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry) const
 {
-	// I can just get the overlapping items
-	// search for the interface on each one of them
-	// activate the interface whenever we press INTERACT
-	TArray<AActor*> OverlappingActors;
-	GetMesh()->GetOverlappingActors(OverlappingActors);
-
-	for (const auto OverlappingActor : OverlappingActors)
+	if(UStaticMeshComponent* carriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0)))
 	{
-		AInteractibleBase* Interactable{ Cast<AInteractibleBase>(OverlappingActor) };
-		if (!Interactable) { return; }
-
-		if (Interactable->GetInteractableType() == EInteractableType::EIT_Grabbable)
-		{
-			// HOLD ITEM
-			IsHoldingObject = true;
-		}
-			
-		else if (Interactable->GetInteractableType() == EInteractableType::EIT_Activable)
-		{
-			// ACTIVATE ITEM
-		}
-
-		else if (Interactable->GetInteractableType() == EInteractableType::EIT_Movable)
-		{
-			// MOVE ITEM
-		}
-
-		else if (Interactable->GetInteractableType() == EInteractableType::EIT_Pressable)
-		{
-			// PRESS ITEM
-		}
-
-		Interactable->Interact();
-		break;
+		carriedMesh->SetStaticMesh(objectToCarry->GetActorMesh());
+		CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+		objectToCarry->Destroy();
 	}
 }
 
@@ -232,14 +217,11 @@ void ADragonPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		// JUMP
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ADragonPlayer::ExecuteJump);
 
-		// RUN
-		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ADragonPlayer::Run);
-
 		// ATTACK
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADragonPlayer::Attack);
-
-		// INTERACT
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ADragonPlayer::Interact);
+		
+		// CARRY
+		EnhancedInputComponent->BindAction(CarryAction, ETriggerEvent::Triggered, this, &ADragonPlayer::CarryObject);
 	}
 	/**/
 }
