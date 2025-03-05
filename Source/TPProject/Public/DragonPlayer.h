@@ -36,7 +36,7 @@ protected:
 
 	// VARIABLES
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	FVector HoldPositionOffset{ FVector(50.f, 0.f, 0.f) };
+	FVector HoldPositionOffset{ FVector(200.f, 100.f, 0.f) };
 	
 	// COMPONENTS
 	UPROPERTY(BlueprintReadOnly, Category="Components")
@@ -56,6 +56,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UBackpackComponent* BackpackComponent;
+
+	UPROPERTY(EditAnywhere, Category="Spawning")
+	TSubclassOf<AActor> ActorToSpawn;
 	
 	// INPUTS
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -93,6 +96,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Interact")
 	float DistanceToInteract{ 0 };
 
+	UPROPERTY()
+	UStaticMeshComponent* CarriedMesh;
+
 	// ANIMATION MONTAGES
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* AttackMontage;
@@ -103,9 +109,11 @@ private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ExecuteJump(const FInputActionValue& Value);
-	// void Interact(const FInputActionValue& Value); TODO Refactor this
-	void CarryObject(const FInputActionValue& Value);
+	void HandleInteractTriggered(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
 
-	void CarryObject(ACarriableObject* objectToCarry) const;
+	void CarryObject(ACarriableObject& objectToCarry) const;
+	void ThrowObject(ACarriableObject& objectToThrow) const;
+	
+	ACarriableObject* TryGetCarriableObject() const;
 };

@@ -18,17 +18,25 @@ public:
 	// Sets default values for this component's properties
 	UBackpackComponent();
 
-	bool CorrectlyAddedToBackpack(ACarriableObject* Object);
+	UFUNCTION()
+	bool CorrectlyAddedToBackpack(AActor* Object);
+
+	UFUNCTION()
 	bool RemoveFromBackpack();
 
-	ACarriableObject* GetNextCarriedItem() const;
+	UFUNCTION()
+	AActor* GetNextCarriedItem();
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(VisibleAnywhere, Category="Data")
-	TArray<ACarriableObject*> ObjectsCarried;
+	TArray<AActor*> ObjectsCarried;
+
+private:
+	UPROPERTY(VisibleAnywhere, Category="Data")
+	TArray<TSubclassOf<AActor>> TypeOfObjectsToSpawn;
 
 public:	
 	// Called every frame

@@ -61,6 +61,9 @@ void ADragonPlayer::BeginPlay()
 			Subsystem->AddMappingContext(PlayerMappingContext, 0);
 		}
 	}
+
+	CarriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0));
+	CarriedMesh->SetVisibility(false);
 }
 
 void ADragonPlayer::PostInitializeComponents()
@@ -68,6 +71,27 @@ void ADragonPlayer::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
+
+void ADragonPlayer::CarryObject(ACarriableObject& objectToCarry) const
+{
+	CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+	objectToCarry.BeCarried(this);
+
+	if (!BackpackComponent->CorrectlyAddedToBackpack(&objectToCarry))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item wasn't attached to player's backpack"));
+	}
+}
+
+void ADragonPlayer::ThrowObject(ACarriableObject& objectToThrow) const
+{
+	CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
+	objectToThrow.BeDropped(GetActorLocation() + HoldPositionOffset);
+	BackpackComponent->RemoveFromBackpack();
+}
+
+
+// Inputs
 void ADragonPlayer::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
@@ -132,7 +156,7 @@ void ADragonPlayer::ExecuteJump(const FInputActionValue& Value)
 	Super::Jump();
 }
 
-void ADragonPlayer::CarryObject(const FInputActionValue& Value)
+void ADragonPlayer::HandleInteractTriggered(const FInputActionValue& Value)
 {
 	if (!BackpackComponent)
 	{
@@ -140,36 +164,19 @@ void ADragonPlayer::CarryObject(const FInputActionValue& Value)
 		return;
 	}
 	
-	TArray<AActor*> OverlappingActors;
-	GetMesh()->GetOverlappingActors(OverlappingActors);
+	auto NextCarriedItem = BackpackComponent->GetNextCarriedItem();
+	if (auto Obj = TryGetCarriableObject())
+	{
+		if (!NextCarriedItem)
+		{
+			CarryObject(*Obj);
+			return;
+		}
 
-	if (OverlappingActors.IsEmpty())
-	{
-		if (UStaticMeshComponent* carriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0)))
-		{
-			GetWorld()->SpawnActor<ACarriableObject>(GetActorLocation() + HoldPositionOffset, GetActorRotation());
-			carriedMesh->SetStaticMesh(nullptr);
-			CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
-			BackpackComponent->RemoveFromBackpack();
-		}
-	}
-	
-	for (const auto OverlappingActor : OverlappingActors)
-	{
-		if (ACarriableObject* carriableObject = Cast<ACarriableObject>(OverlappingActor))
-		{
-			if (!BackpackComponent->CorrectlyAddedToBackpack(carriableObject))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Item wasn't attached to player's backpack"));
-				return;
-			}
- 
-			// add to top of the player
-			UE_LOG(LogTemp, Warning, TEXT("Trying to attach object to player!"))
-			CarryObject(carriableObject);
-		}
+		ThrowObject(*Obj);
 	}
 }
+
 void ADragonPlayer::Attack(const FInputActionValue& Value)
 {
 	if (bCanAttack)
@@ -185,15 +192,23 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 	}
 }
 
-void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry) const
+ACarriableObject* ADragonPlayer::TryGetCarriableObject() const
 {
-	if(UStaticMeshComponent* carriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0)))
+	TArray<AActor*> OverlappingActors;
+	GetMesh()->GetOverlappingActors(OverlappingActors);
+	
+	// carry first overlapping object
+	for (const auto& Actor : OverlappingActors)
 	{
-		carriedMesh->SetStaticMesh(objectToCarry->GetActorMesh());
-		CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
-		objectToCarry->Destroy();
+		if (ACarriableObject* CarriableObject = Cast<ACarriableObject>(Actor))
+		{
+			return CarriableObject;
+		}
 	}
+
+	return nullptr;
 }
+
 
 // Called every frame
 void ADragonPlayer::Tick(float DeltaTime)
@@ -221,7 +236,7 @@ void ADragonPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADragonPlayer::Attack);
 		
 		// CARRY
-		EnhancedInputComponent->BindAction(CarryAction, ETriggerEvent::Triggered, this, &ADragonPlayer::CarryObject);
+		EnhancedInputComponent->BindAction(CarryAction, ETriggerEvent::Triggered, this, &ADragonPlayer::HandleInteractTriggered);
 	}
 	/**/
 }

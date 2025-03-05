@@ -18,11 +18,13 @@ class TPPROJECT_API ACarriableObject : public AActor
 	
 public:	
 	ACarriableObject();
+	virtual ~ACarriableObject() override;
 
+	void BeCarried(const ACharacter* CarriedBy);
+	void BeDropped(const FVector& DroppedPosition);
+	
 	// void ConnectsTo(AActor* Connector);
-	void Disconnects();
-
-	UStaticMesh* GetActorMesh() const;
+	UStaticMeshComponent* GetActorMesh() const;
 	
 	bool IsProperlyAttachedTo(AActor* Parent);
 

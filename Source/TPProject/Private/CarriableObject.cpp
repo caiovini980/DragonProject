@@ -24,6 +24,39 @@ ACarriableObject::ACarriableObject()
 	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	// AddToRoot();
+}
+
+ACarriableObject::~ACarriableObject()
+{
+	// RemoveFromRoot();
+}
+
+void ACarriableObject::BeCarried(const ACharacter* CarriedBy)
+{
+	SetActorEnableCollision(false);
+	SetActorTickEnabled(false);
+	GetActorMesh()->SetSimulatePhysics(false);
+		
+	AttachToComponent(CarriedBy->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
+}
+
+void ACarriableObject::BeDropped(const FVector& DroppedPosition)
+{
+	SetActorEnableCollision(true);
+	SetActorTickEnabled(true);
+	SetActorLocation(DroppedPosition);
+
+	// enable physics only on MeshComponent
+	for (UActorComponent* Component : GetComponents())
+	{
+		if (UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(Component))
+		{
+			MeshComp->SetSimulatePhysics(true);
+		}
+	}
+
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 }
 
 void ACarriableObject::BeginPlay()
@@ -73,17 +106,8 @@ bool ACarriableObject::IsProperlyAttachedTo(AActor* Parent)
 // 	PreviousParent = Connector;
 // }
 
-void ACarriableObject::Disconnects()
+UStaticMeshComponent* ACarriableObject::GetActorMesh() const
 {
-	Destroy();
-	
-	MeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
-	MeshComponent->SetEnableGravity(true);
-	PreviousParent = nullptr;
-}
-
-UStaticMesh* ACarriableObject::GetActorMesh() const
-{
-	return MeshComponent->GetStaticMesh();
+	return MeshComponent;
 }
 

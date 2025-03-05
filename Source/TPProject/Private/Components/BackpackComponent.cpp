@@ -1,11 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Components/BackpackComponent.h"
-
-#include "ComponentUtils.h"
-#include "PhysicsEngine/PhysicsConstraintComponent.h"
-
 
 // Sets default values for this component's properties
 UBackpackComponent::UBackpackComponent()
@@ -17,7 +12,7 @@ UBackpackComponent::UBackpackComponent()
 	// ...
 }
 
-bool UBackpackComponent::CorrectlyAddedToBackpack(ACarriableObject* Object)
+bool UBackpackComponent::CorrectlyAddedToBackpack(AActor* Object)
 {
 	if(ObjectsCarried.Contains(Object))
 	{
@@ -43,9 +38,24 @@ bool UBackpackComponent::RemoveFromBackpack()
 	return true;
 }
 
-ACarriableObject* UBackpackComponent::GetNextCarriedItem() const
+// TSubclassOf<AActor> UBackpackComponent::GetNextCarriedItem()
+AActor* UBackpackComponent::GetNextCarriedItem()
 {
-	return ObjectsCarried.Top();
+	if (ObjectsCarried.IsEmpty())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Objects carried is null!"))
+		return nullptr;	
+	}
+	
+	for (auto& Item : TypeOfObjectsToSpawn)
+	{
+		if (Item == ObjectsCarried.Top()->GetClass())
+		{
+			return ObjectsCarried.Top();
+		}
+	}
+
+	return nullptr;
 }
 
 
@@ -57,7 +67,6 @@ void UBackpackComponent::BeginPlay()
 	// ...
 	
 }
-
 
 // Called every frame
 void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
