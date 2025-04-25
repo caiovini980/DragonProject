@@ -44,10 +44,13 @@ ADragonPlayer::ADragonPlayer()
 	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	PlayerCamera->SetupAttachment(CameraArm);
 
-	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
+	//AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
 	CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
 	
 	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("Backpack"));
+
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilityComponent"));
+	PlayerAttributes = CreateDefaultSubobject<UPlayerAttributes>(TEXT("PlayerAttributes"));
 }
 
 // Called when the game starts or when spawned
@@ -64,6 +67,8 @@ void ADragonPlayer::BeginPlay()
 
 	CarriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0));
 	CarriedMesh->SetVisibility(false);
+
+	AbilitySystemComponent->InitializeComponent();
 }
 
 void ADragonPlayer::PostInitializeComponents()
@@ -71,10 +76,9 @@ void ADragonPlayer::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
-
 void ADragonPlayer::CarryObject(ACarriableObject& objectToCarry) const
 {
-	CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+	//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
 	objectToCarry.BeCarried(this);
 
 	if (!BackpackComponent->CorrectlyAddedToBackpack(&objectToCarry))
@@ -85,7 +89,7 @@ void ADragonPlayer::CarryObject(ACarriableObject& objectToCarry) const
 
 void ADragonPlayer::ThrowObject(ACarriableObject& objectToThrow) const
 {
-	CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
+	//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
 	objectToThrow.BeDropped(GetActorLocation() + HoldPositionOffset);
 	BackpackComponent->RemoveFromBackpack();
 }
@@ -185,7 +189,7 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 		
 		if (AnimInstance && AttackMontage && CharacterMovementComponent)
 		{
-			CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+			//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
 			AnimInstance->Montage_Play(AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName("Attack1"), AttackMontage);
 		}
@@ -209,6 +213,10 @@ ACarriableObject* ADragonPlayer::TryGetCarriableObject() const
 	return nullptr;
 }
 
+UAbilitySystemComponent* ADragonPlayer::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
 
 // Called every frame
 void ADragonPlayer::Tick(float DeltaTime)

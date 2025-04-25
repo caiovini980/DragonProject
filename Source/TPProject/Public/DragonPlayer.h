@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "PlayerAttributes.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
+
 #include "DragonPlayer.generated.h"
 
 class ACarriableObject;
@@ -15,12 +19,13 @@ class UCameraComponent;
 class UCharacterMovementComponent;
 class UInputMappingContext;
 class UInputAction;
+class UPlayerAttributes;
 class UAnimMontage;
 
 class UAttributeComponent;
 
 UCLASS()
-class TPPROJECT_API ADragonPlayer : public ACharacter
+class TPPROJECT_API ADragonPlayer : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -33,6 +38,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	// VARIABLES
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
@@ -50,12 +56,15 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UCharacterMovementComponent* CharacterMovementComponent;
-	
-	UPROPERTY(VisibleAnywhere, Category="Components")
-	UAttributeComponent* AttributeComponent;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UBackpackComponent* BackpackComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPlayerAttributes* PlayerAttributes;
 
 	UPROPERTY(EditAnywhere, Category="Spawning")
 	TSubclassOf<AActor> ActorToSpawn;
