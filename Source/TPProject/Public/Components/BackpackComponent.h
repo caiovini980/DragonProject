@@ -19,24 +19,21 @@ public:
 	UBackpackComponent();
 
 	UFUNCTION()
-	bool CorrectlyAddedToBackpack(AActor* Object);
+	bool CorrectlyAddedToBackpack(ACarriableObject* Object);
 
 	UFUNCTION()
 	bool RemoveFromBackpack();
 
-	UFUNCTION()
-	AActor* GetNextCarriedItem();
+	ACarriableObject* GetLastCarriedItem();
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(VisibleAnywhere, Category="Data")
-	TArray<AActor*> ObjectsCarried;
+	TArray<ACarriableObject*> ObjectsCarried;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category="Data")
-	TArray<TSubclassOf<AActor>> TypeOfObjectsToSpawn;
 
 public:	
 	// Called every frame

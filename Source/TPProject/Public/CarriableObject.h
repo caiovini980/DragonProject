@@ -20,7 +20,7 @@ public:
 	ACarriableObject();
 	virtual ~ACarriableObject() override;
 
-	void BeCarried(const ACharacter* CarriedBy);
+	void BeCarried(const ACharacter& CarriedBy);
 	void BeDropped(const FVector& DroppedPosition);
 	
 	// void ConnectsTo(AActor* Connector);

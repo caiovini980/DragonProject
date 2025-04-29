@@ -19,7 +19,7 @@ class TPPROJECT_API UPlayerAttributes : public UAttributeSet
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UPlayerAttributes, Health)
 	

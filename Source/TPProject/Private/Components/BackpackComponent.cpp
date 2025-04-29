@@ -7,12 +7,29 @@ UBackpackComponent::UBackpackComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
 
-bool UBackpackComponent::CorrectlyAddedToBackpack(AActor* Object)
+// Called when the game starts
+void UBackpackComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// ...
+
+}
+
+// Called every frame
+void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// ...
+}
+
+bool UBackpackComponent::CorrectlyAddedToBackpack(ACarriableObject* Object)
 {
 	if(ObjectsCarried.Contains(Object))
 	{
@@ -39,40 +56,14 @@ bool UBackpackComponent::RemoveFromBackpack()
 }
 
 // TSubclassOf<AActor> UBackpackComponent::GetNextCarriedItem()
-AActor* UBackpackComponent::GetNextCarriedItem()
+ACarriableObject* UBackpackComponent::GetLastCarriedItem()
 {
 	if (ObjectsCarried.IsEmpty())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Objects carried is null!"))
+		UE_LOG(LogTemp, Log, TEXT("Backpack is empty!"))
 		return nullptr;	
 	}
 	
-	for (auto& Item : TypeOfObjectsToSpawn)
-	{
-		if (Item == ObjectsCarried.Top()->GetClass())
-		{
-			return ObjectsCarried.Top();
-		}
-	}
-
-	return nullptr;
-}
-
-
-// Called when the game starts
-void UBackpackComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
-// Called every frame
-void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	return ObjectsCarried.Top();
 }
 

@@ -12,6 +12,8 @@
 ACarriableObject::ACarriableObject()
 {
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	MeshComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	RootComponent = MeshComponent;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
@@ -23,7 +25,7 @@ ACarriableObject::ACarriableObject()
 	PhysicsConstraint->SetupAttachment(MeshComponent);
 	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	// AddToRoot();
 }
 
@@ -32,20 +34,20 @@ ACarriableObject::~ACarriableObject()
 	// RemoveFromRoot();
 }
 
-void ACarriableObject::BeCarried(const ACharacter* CarriedBy)
+void ACarriableObject::BeCarried(const ACharacter& CarriedBy)
 {
 	SetActorEnableCollision(false);
 	SetActorTickEnabled(false);
 	GetActorMesh()->SetSimulatePhysics(false);
 		
-	AttachToComponent(CarriedBy->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
+	AttachToComponent(CarriedBy.GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 }
 
 void ACarriableObject::BeDropped(const FVector& DroppedPosition)
 {
+	SetActorLocation(DroppedPosition);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
-	SetActorLocation(DroppedPosition);
 
 	// enable physics only on MeshComponent
 	for (UActorComponent* Component : GetComponents())

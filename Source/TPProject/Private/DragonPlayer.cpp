@@ -45,12 +45,12 @@ ADragonPlayer::ADragonPlayer()
 	PlayerCamera->SetupAttachment(CameraArm);
 
 	//AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
-	CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
-	
 	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("Backpack"));
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilityComponent"));
 	PlayerAttributes = CreateDefaultSubobject<UPlayerAttributes>(TEXT("PlayerAttributes"));
+
+	CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
 }
 
 // Called when the game starts or when spawned
@@ -68,29 +68,27 @@ void ADragonPlayer::BeginPlay()
 	CarriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0));
 	CarriedMesh->SetVisibility(false);
 
-	AbilitySystemComponent->InitializeComponent();
+	//AbilitySystemComponent->InitializeComponent();
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 }
 
-void ADragonPlayer::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-}
-
-void ADragonPlayer::CarryObject(ACarriableObject& objectToCarry) const
+void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry) const
 {
 	//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
-	objectToCarry.BeCarried(this);
-
-	if (!BackpackComponent->CorrectlyAddedToBackpack(&objectToCarry))
+	
+	if (!BackpackComponent->CorrectlyAddedToBackpack(objectToCarry))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item wasn't attached to player's backpack"));
+		return;
 	}
+
+	objectToCarry->BeCarried(*this); // TODO: change this to the backpack script
 }
 
-void ADragonPlayer::ThrowObject(ACarriableObject& objectToThrow) const
+void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow) const
 {
 	//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
-	objectToThrow.BeDropped(GetActorLocation() + HoldPositionOffset);
+	objectToThrow->BeDropped(GetActorLocation() + HoldPositionOffset);
 	BackpackComponent->RemoveFromBackpack();
 }
 
@@ -167,17 +165,17 @@ void ADragonPlayer::HandleInteractTriggered(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Error, TEXT("Backpack Component is NULL on DragonPlayer.cpp"));
 		return;
 	}
-	
-	auto NextCarriedItem = BackpackComponent->GetNextCarriedItem();
-	if (auto Obj = TryGetCarriableObject())
-	{
-		if (!NextCarriedItem)
-		{
-			CarryObject(*Obj);
-			return;
-		}
 
-		ThrowObject(*Obj);
+	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
+	{
+		ThrowObject(LastCarriedItem);
+		return;
+	}
+
+	if (ACarriableObject* CarriableObject = TryGetCarriableObject())
+	{
+		CarryObject(CarriableObject);
+		return;
 	}
 }
 

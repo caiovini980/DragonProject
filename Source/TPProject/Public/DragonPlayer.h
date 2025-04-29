@@ -37,7 +37,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void PostInitializeComponents() override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	// VARIABLES
@@ -63,7 +62,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UAbilitySystemComponent* AbilitySystemComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY()
 	UPlayerAttributes* PlayerAttributes;
 
 	UPROPERTY(EditAnywhere, Category="Spawning")
@@ -121,8 +120,8 @@ private:
 	void HandleInteractTriggered(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
 
-	void CarryObject(ACarriableObject& objectToCarry) const;
-	void ThrowObject(ACarriableObject& objectToThrow) const;
+	void CarryObject(ACarriableObject* objectToCarry) const;
+	void ThrowObject(ACarriableObject* objectToThrow) const;
 	
 	ACarriableObject* TryGetCarriableObject() const;
 };
