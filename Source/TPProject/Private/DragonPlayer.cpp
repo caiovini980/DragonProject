@@ -3,7 +3,6 @@
 
 #include "DragonPlayer.h"
 
-#include "CarriableObject.h"
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -17,6 +16,8 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+
+#include "CarriableObject.h"
 
 /**/
 // Sets default values
@@ -68,26 +69,26 @@ void ADragonPlayer::BeginPlay()
 	CarriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0));
 	CarriedMesh->SetVisibility(false);
 
-	//AbilitySystemComponent->InitializeComponent();
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 }
 
 void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry) const
 {
-	//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+	CharacterMovementComponent->MaxWalkSpeed = 300;
 	
-	if (!BackpackComponent->CorrectlyAddedToBackpack(objectToCarry))
+	if (!BackpackComponent->WasAddedToBackpack(objectToCarry))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item wasn't attached to player's backpack"));
 		return;
 	}
 
-	objectToCarry->BeCarried(*this); // TODO: change this to the backpack script
+	objectToCarry->BeCarried();
+	objectToCarry->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 }
 
 void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow) const
 {
-	//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetRunSpeed();
+	CharacterMovementComponent->MaxWalkSpeed = 600;
 	objectToThrow->BeDropped(GetActorLocation() + HoldPositionOffset);
 	BackpackComponent->RemoveFromBackpack();
 }
@@ -165,7 +166,6 @@ void ADragonPlayer::HandleInteractTriggered(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Error, TEXT("Backpack Component is NULL on DragonPlayer.cpp"));
 		return;
 	}
-
 	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
 	{
 		ThrowObject(LastCarriedItem);
@@ -187,7 +187,7 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 		
 		if (AnimInstance && AttackMontage && CharacterMovementComponent)
 		{
-			//CharacterMovementComponent->MaxWalkSpeed = AttributeComponent->GetWalkSpeed();
+			CharacterMovementComponent->MaxWalkSpeed = 300;
 			AnimInstance->Montage_Play(AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName("Attack1"), AttackMontage);
 		}

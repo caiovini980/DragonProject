@@ -19,7 +19,7 @@ public:
 	UBackpackComponent();
 
 	UFUNCTION()
-	bool CorrectlyAddedToBackpack(ACarriableObject* Object);
+	bool WasAddedToBackpack(ACarriableObject* Object);
 
 	UFUNCTION()
 	bool RemoveFromBackpack();

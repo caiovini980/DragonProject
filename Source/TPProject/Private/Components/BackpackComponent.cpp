@@ -29,16 +29,15 @@ void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 }
 
-bool UBackpackComponent::CorrectlyAddedToBackpack(ACarriableObject* Object)
+bool UBackpackComponent::WasAddedToBackpack(ACarriableObject* ObjectToCarry)
 {
-	if(ObjectsCarried.Contains(Object))
+	if(ObjectsCarried.Contains(ObjectToCarry))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Object already on the backpack."))
 		return false;
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("Adding object to the backpack."))
-	ObjectsCarried.Push(Object);
+	ObjectsCarried.Push(ObjectToCarry);
 	return true;
 }
 
@@ -49,8 +48,7 @@ bool UBackpackComponent::RemoveFromBackpack()
 		UE_LOG(LogTemp, Warning, TEXT("There are no objects on the backpack."))
 		return false;
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("Removing object to the backpack."))
+
 	ObjectsCarried.Pop();
 	return true;
 }

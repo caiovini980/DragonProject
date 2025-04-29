@@ -3,7 +3,6 @@
 
 #include "CarriableObject.h"
 
-#include "DragonPlayer.h"
 #include "Components/SphereComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
@@ -34,13 +33,11 @@ ACarriableObject::~ACarriableObject()
 	// RemoveFromRoot();
 }
 
-void ACarriableObject::BeCarried(const ACharacter& CarriedBy)
+void ACarriableObject::BeCarried()
 {
 	SetActorEnableCollision(false);
 	SetActorTickEnabled(false);
 	GetActorMesh()->SetSimulatePhysics(false);
-		
-	AttachToComponent(CarriedBy.GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 }
 
 void ACarriableObject::BeDropped(const FVector& DroppedPosition)
@@ -82,31 +79,6 @@ bool ACarriableObject::IsProperlyAttachedTo(AActor* Parent)
 	
 	return true;
 }
-
-// void ACarriableObject::ConnectsTo(AActor* Connector)
-// {
-// 	if (PreviousParent == Connector)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Object already being carried by this owner"))
-// 		return;
-// 	}
-// #if UE_EDITOR
-// 	float itemHeight = MeshComponent->Bounds.GetBox().GetSize().Z;
-// 	FVector ConnectorLocation = Connector->GetActorLocation() + FVector(0, 0, CarryOffset + itemHeight);
-//
-//
-// 	UE_LOG(LogTemp, Warning, TEXT("Object Height: %f"), itemHeight)
-// #endif
-// 	
-// 	// MeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-// 	// FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::, true);
-// 	// AttachToActor(Connector, AttachmentTransformRules, FName("CarrySocket"));
-//
-// 	this->AttachToComponent(Cast<ADragonPlayer>(Connector)->GetMeshComponent(),
-// 		FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CarrySocket"));
-//
-// 	PreviousParent = Connector;
-// }
 
 UStaticMeshComponent* ACarriableObject::GetActorMesh() const
 {
