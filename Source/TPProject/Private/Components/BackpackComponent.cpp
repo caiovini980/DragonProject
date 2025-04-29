@@ -29,19 +29,18 @@ void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 }
 
-bool UBackpackComponent::WasAddedToBackpack(ACarriableObject* ObjectToCarry)
+void UBackpackComponent::AddToBackpack(ACarriableObject* ObjectToCarry)
 {
 	if(ObjectsCarried.Contains(ObjectToCarry))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Object already on the backpack."))
-		return false;
+		return;
 	}
 	
 	ObjectsCarried.Push(ObjectToCarry);
-	return true;
 }
 
-bool UBackpackComponent::RemoveFromBackpack()
+bool UBackpackComponent::RemoveTopItemFromBackpack()
 {
 	if (ObjectsCarried.Num() <= 0)
 	{
@@ -63,5 +62,10 @@ ACarriableObject* UBackpackComponent::GetLastCarriedItem()
 	}
 	
 	return ObjectsCarried.Top();
+}
+
+TArray<ACarriableObject*> UBackpackComponent::GetAllCarriedItems()
+{
+	return ObjectsCarried;
 }
 

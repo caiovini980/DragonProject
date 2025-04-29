@@ -19,12 +19,16 @@ public:
 	UBackpackComponent();
 
 	UFUNCTION()
-	bool WasAddedToBackpack(ACarriableObject* Object);
+	void AddToBackpack(ACarriableObject* Object);
 
 	UFUNCTION()
-	bool RemoveFromBackpack();
+	bool RemoveTopItemFromBackpack();
 
+	UFUNCTION()
 	ACarriableObject* GetLastCarriedItem();
+
+	UFUNCTION()
+	TArray<ACarriableObject*> GetAllCarriedItems();
 	
 protected:
 	// Called when the game starts

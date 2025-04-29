@@ -73,26 +73,27 @@ void ADragonPlayer::BeginPlay()
 }
 
 void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry) const
-{
-	CharacterMovementComponent->MaxWalkSpeed = 300;
-	
-	if (!BackpackComponent->WasAddedToBackpack(objectToCarry))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item wasn't attached to player's backpack"));
-		return;
-	}
+{	
+	BackpackComponent->AddToBackpack(objectToCarry);
 
-	objectToCarry->BeCarried();
-	objectToCarry->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
+	if (BackpackComponent->GetLastCarriedItem() == objectToCarry)
+	{
+		CharacterMovementComponent->MaxWalkSpeed = 300;
+		objectToCarry->BeCarried();
+		objectToCarry->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
+	}
 }
 
 void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow) const
 {
-	CharacterMovementComponent->MaxWalkSpeed = 600;
-	objectToThrow->BeDropped(GetActorLocation() + HoldPositionOffset);
-	BackpackComponent->RemoveFromBackpack();
+	if (BackpackComponent->GetAllCarriedItems().Num() > 0)
+	{
+		CharacterMovementComponent->MaxWalkSpeed = 600;
+		BackpackComponent->RemoveTopItemFromBackpack();
+		objectToThrow->BeDropped(GetActorLocation() + HoldPositionOffset);
+		objectToThrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	}
 }
-
 
 // Inputs
 void ADragonPlayer::Move(const FInputActionValue& Value)
@@ -166,15 +167,16 @@ void ADragonPlayer::HandleInteractTriggered(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Error, TEXT("Backpack Component is NULL on DragonPlayer.cpp"));
 		return;
 	}
-	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
-	{
-		ThrowObject(LastCarriedItem);
-		return;
-	}
 
 	if (ACarriableObject* CarriableObject = TryGetCarriableObject())
 	{
 		CarryObject(CarriableObject);
+		return;
+	}
+
+	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
+	{
+		ThrowObject(LastCarriedItem);
 		return;
 	}
 }

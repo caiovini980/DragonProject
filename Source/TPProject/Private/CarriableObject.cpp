@@ -46,16 +46,7 @@ void ACarriableObject::BeDropped(const FVector& DroppedPosition)
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
 
-	// enable physics only on MeshComponent
-	for (UActorComponent* Component : GetComponents())
-	{
-		if (UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(Component))
-		{
-			MeshComp->SetSimulatePhysics(true);
-		}
-	}
-
-	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	GetActorMesh()->SetSimulatePhysics(true);
 }
 
 void ACarriableObject::BeginPlay()
