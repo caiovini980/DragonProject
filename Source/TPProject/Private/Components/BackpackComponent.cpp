@@ -18,7 +18,7 @@ UBackpackComponent::UBackpackComponent()
 void UBackpackComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	OnSetMaxBackpackCapacity.Broadcast(MaxCapacity);
 	// ...
 
 }
@@ -50,6 +50,7 @@ bool UBackpackComponent::TryAddObjectToBackpack(ACarriableObject* ObjectToCarry,
 	}
 
 	ObjectsCarried.Push(ObjectToCarry);
+	OnItemGrabbed.Broadcast(1); // TODO - Magic number
 	return true;
 }
 
@@ -59,8 +60,8 @@ bool UBackpackComponent::TryRemoveTopItemFromBackpack(AActor* Owner)
 	{
 		LastCarriedItem->BeDropped(Owner->GetActorLocation() + DropPositionOffset);
 		LastCarriedItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		//LastCarriedItem->SetActorLocation(Owner->GetActorForwardVector() + DropPositionOffset);
-		ObjectsCarried.Pop();
+		ObjectsCarried.Pop(); 
+		OnItemDropped.Broadcast(-1); // TODO - Magic number
 		return true;
 	}
 

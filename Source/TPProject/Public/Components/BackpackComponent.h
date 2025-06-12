@@ -4,10 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Delegates/Delegate.h"
 #include "BackpackComponent.generated.h"
 
 class UPhysicsConstraintComponent;
 class ACarriableObject;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemGrabbed, int, AmountGrabbed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemDropped, int, AmountDropped);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSetMaxBackpackCapacity, int, MaxBackpackCapacity);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TPPROJECT_API UBackpackComponent : public UActorComponent
@@ -17,6 +22,10 @@ class TPPROJECT_API UBackpackComponent : public UActorComponent
 public:
 	// Sets default values for this component's properties
 	UBackpackComponent();
+
+	FOnItemGrabbed OnItemGrabbed;
+	FOnItemDropped OnItemDropped;
+	FOnSetMaxBackpackCapacity OnSetMaxBackpackCapacity;
 
 	UFUNCTION()
 	bool TryAddObjectToBackpack(ACarriableObject* Object, AActor* Owner);
