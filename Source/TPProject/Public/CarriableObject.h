@@ -23,10 +23,10 @@ public:
 	void BeCarried();
 	void BeDropped(const FVector& DroppedPosition);
 	
-	// void ConnectsTo(AActor* Connector);
 	UStaticMeshComponent* GetActorMesh() const;
 	
 	bool IsProperlyAttachedTo(AActor* Parent);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -44,7 +44,7 @@ protected:
 	AActor* PreviousParent;
 
 	UPROPERTY(EditAnywhere, Category = "Utils")
-	float CarryOffset{0.0f};
+	float CarryOffset{ 0.0f };
 	
 public:	
 	// Called every frame

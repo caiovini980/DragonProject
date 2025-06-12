@@ -66,32 +66,37 @@ void ADragonPlayer::BeginPlay()
 		}
 	}
 
-	CarriedMesh = Cast<UStaticMeshComponent>(GetMesh()->GetChildComponent(0));
-	CarriedMesh->SetVisibility(false);
-
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 }
 
-void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry) const
-{	
-	BackpackComponent->AddToBackpack(objectToCarry);
+void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry)
+{
+	objectToCarry->BeCarried();
 
-	if (BackpackComponent->GetLastCarriedItem() == objectToCarry)
+	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
 	{
-		CharacterMovementComponent->MaxWalkSpeed = 300;
-		objectToCarry->BeCarried();
+		objectToCarry->AttachToComponent(LastCarriedItem->GetActorMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("UpSocket"));
+		objectToCarry->SetActorRelativeLocation(CarryPositionOffset);
+	}
+	else
+	{
 		objectToCarry->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 	}
+
+	OnGrabObject();
+	BackpackComponent->AddToBackpack(objectToCarry);
+	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
-void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow) const
+void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow)
 {
 	if (BackpackComponent->GetAllCarriedItems().Num() > 0)
 	{
-		CharacterMovementComponent->MaxWalkSpeed = 600;
+		OnDropObject();
 		BackpackComponent->RemoveTopItemFromBackpack();
-		objectToThrow->BeDropped(GetActorLocation() + HoldPositionOffset);
+		objectToThrow->BeDropped(GetActorLocation() + DropPositionOffset);
 		objectToThrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 	}
 }
 
@@ -189,11 +194,17 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 		
 		if (AnimInstance && AttackMontage && CharacterMovementComponent)
 		{
-			CharacterMovementComponent->MaxWalkSpeed = 300;
+			//CharacterMovementComponent->MaxWalkSpeed = 300;
 			AnimInstance->Montage_Play(AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName("Attack1"), AttackMontage);
 		}
 	}
+}
+
+// TODO: Remove this
+void ADragonPlayer::SetSpeed(float NewSpeed)
+{
+	CharacterMovementComponent->MaxWalkSpeed = NewSpeed;
 }
 
 ACarriableObject* ADragonPlayer::TryGetCarriableObject() const
@@ -249,4 +260,5 @@ void ADragonPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	/**/
 }
 
-
+void ADragonPlayer::OnGrabObject_Implementation() {}
+void ADragonPlayer::OnDropObject_Implementation() {}

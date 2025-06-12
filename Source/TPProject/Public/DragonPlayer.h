@@ -39,9 +39,23 @@ protected:
 	virtual void BeginPlay() override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	// EVENTS
+	UFUNCTION(BlueprintNativeEvent)
+	void OnGrabObject();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnDropObject();
+
+	// METHODS
+	UFUNCTION(BlueprintCallable)
+	void SetSpeed(float NewSpeed);
+
 	// VARIABLES
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	FVector HoldPositionOffset{ FVector(200.f, 100.f, 0.f) }; // Dragon TODO: This isn't working properly
+	FVector DropPositionOffset{ FVector(200.f, 100.f, 0.f) };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	FVector CarryPositionOffset{ FVector(160.f, -43.f, 0.f) }; // Dragon TODO: This isn't working properly
 	
 	// COMPONENTS
 	UPROPERTY(BlueprintReadOnly, Category="Components")
@@ -104,9 +118,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Interact")
 	float DistanceToInteract{ 0 };
 
-	UPROPERTY()
-	UStaticMeshComponent* CarriedMesh;
-
 	// ANIMATION MONTAGES
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* AttackMontage;
@@ -120,8 +131,8 @@ private:
 	void HandleInteractTriggered(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
 
-	void CarryObject(ACarriableObject* objectToCarry) const;
-	void ThrowObject(ACarriableObject* objectToThrow) const;
+	void CarryObject(ACarriableObject* objectToCarry);
+	void ThrowObject(ACarriableObject* objectToThrow);
 	
 	ACarriableObject* TryGetCarriableObject() const;
 };

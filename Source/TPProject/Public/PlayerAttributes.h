@@ -22,5 +22,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UPlayerAttributes, Health)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Speed")
+	FGameplayAttributeData Speed;
+	ATTRIBUTE_ACCESSORS(UPlayerAttributes, Speed)
 	
 };
