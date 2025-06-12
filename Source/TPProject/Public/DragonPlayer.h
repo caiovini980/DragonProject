@@ -51,11 +51,6 @@ protected:
 	void SetSpeed(float NewSpeed);
 
 	// VARIABLES
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	FVector DropPositionOffset{ FVector(200.f, 100.f, 0.f) };
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	FVector CarryPositionOffset{ FVector(160.f, -43.f, 0.f) }; // Dragon TODO: This isn't working properly
 	
 	// COMPONENTS
 	UPROPERTY(BlueprintReadOnly, Category="Components")

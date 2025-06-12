@@ -19,10 +19,10 @@ public:
 	UBackpackComponent();
 
 	UFUNCTION()
-	void AddToBackpack(ACarriableObject* Object);
+	bool TryAddObjectToBackpack(ACarriableObject* Object, AActor* Owner);
 
 	UFUNCTION()
-	bool HasRemovedTopItemFromBackpack();
+	bool TryRemoveTopItemFromBackpack(AActor* Owner);
 
 	UFUNCTION()
 	ACarriableObject* GetLastCarriedItem();
@@ -37,9 +37,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Data")
 	TArray<ACarriableObject*> ObjectsCarried;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int MaxCapacity{ 2 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	FVector DropPositionOffset{ FVector(100.f, 0.f, 0.f) };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	FVector CarryPositionOffset{ FVector(0, -20.f, 0.f) }; // Dragon TODO: This isn't working properly
+
 private:
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

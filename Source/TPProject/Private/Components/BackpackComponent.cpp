@@ -2,6 +2,8 @@
 
 #include "Components/BackpackComponent.h"
 
+#include "CarriableObject.h"
+
 // Sets default values for this component's properties
 UBackpackComponent::UBackpackComponent()
 {
@@ -29,25 +31,40 @@ void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 }
 
-void UBackpackComponent::AddToBackpack(ACarriableObject* ObjectToCarry)
+bool UBackpackComponent::TryAddObjectToBackpack(ACarriableObject* ObjectToCarry, AActor* Owner)
 {
-	if(ObjectsCarried.Contains(ObjectToCarry))
-	{
-		return;
-	}
-	
-	ObjectsCarried.Push(ObjectToCarry);
-}
-
-bool UBackpackComponent::HasRemovedTopItemFromBackpack()
-{
-	if (ObjectsCarried.Num() <= 0)
+	if(ObjectsCarried.Contains(ObjectToCarry) || ObjectsCarried.Num() >= MaxCapacity)
 	{
 		return false;
 	}
+	
+	ObjectToCarry->BeCarried();
+	if (ACarriableObject* LastCarriedItem = GetLastCarriedItem())
+	{
+		ObjectToCarry->AttachToComponent(LastCarriedItem->GetActorMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("UpSocket"));
+		ObjectToCarry->SetActorRelativeLocation(CarryPositionOffset);
+	}
+	else
+	{
+		ObjectToCarry->AttachToComponent(Owner->GetComponentByClass<USkeletalMeshComponent>(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
+	}
 
-	ObjectsCarried.Pop();
+	ObjectsCarried.Push(ObjectToCarry);
 	return true;
+}
+
+bool UBackpackComponent::TryRemoveTopItemFromBackpack(AActor* Owner)
+{
+	if (ACarriableObject* LastCarriedItem = GetLastCarriedItem())
+	{
+		LastCarriedItem->BeDropped(Owner->GetActorLocation() + DropPositionOffset);
+		LastCarriedItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		//LastCarriedItem->SetActorLocation(Owner->GetActorForwardVector() + DropPositionOffset);
+		ObjectsCarried.Pop();
+		return true;
+	}
+
+	return false;
 }
 
 // TSubclassOf<AActor> UBackpackComponent::GetNextCarriedItem()

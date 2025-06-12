@@ -71,39 +71,31 @@ void ADragonPlayer::BeginPlay()
 
 void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry)
 {
-	objectToCarry->BeCarried();
-
-	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
+	if (!BackpackComponent->TryAddObjectToBackpack(objectToCarry, this))
 	{
-		objectToCarry->AttachToComponent(LastCarriedItem->GetActorMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("UpSocket"));
-		objectToCarry->SetActorRelativeLocation(CarryPositionOffset);
+		return; 
 	}
-	else
+
+	if (BackpackComponent->GetAllCarriedItems().Num() == 1)
 	{
 		OnGrabObject();
-		objectToCarry->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 	}
-
-	BackpackComponent->AddToBackpack(objectToCarry);
+	
 	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
 void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow)
 {
-	if (BackpackComponent->HasRemovedTopItemFromBackpack())
+	if (!BackpackComponent->TryRemoveTopItemFromBackpack(this))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Dropping object!"))
-		objectToThrow->BeDropped(GetActorLocation() + DropPositionOffset);
-		objectToThrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		return;
 	}
 
-	// check if has any item left on the backpack, if not, remove the GameplayEffect
-	if (BackpackComponent->GetAllCarriedItems().Num() <= 0)
+	if (!BackpackComponent->GetLastCarriedItem())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Dropped all objects!"))
 		OnDropAllObjects();
 	}
-
+	
 	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
