@@ -80,24 +80,31 @@ void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry)
 	}
 	else
 	{
+		OnGrabObject();
 		objectToCarry->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 	}
 
-	OnGrabObject();
 	BackpackComponent->AddToBackpack(objectToCarry);
 	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
 void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow)
 {
-	if (BackpackComponent->GetAllCarriedItems().Num() > 0)
+	if (BackpackComponent->HasRemovedTopItemFromBackpack())
 	{
-		OnDropObject();
-		BackpackComponent->RemoveTopItemFromBackpack();
+		UE_LOG(LogTemp, Warning, TEXT("Dropping object!"))
 		objectToThrow->BeDropped(GetActorLocation() + DropPositionOffset);
 		objectToThrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 	}
+
+	// check if has any item left on the backpack, if not, remove the GameplayEffect
+	if (BackpackComponent->GetAllCarriedItems().Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dropped all objects!"))
+		OnDropAllObjects();
+	}
+
+	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
 // Inputs
@@ -261,4 +268,4 @@ void ADragonPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 }
 
 void ADragonPlayer::OnGrabObject_Implementation() {}
-void ADragonPlayer::OnDropObject_Implementation() {}
+void ADragonPlayer::OnDropAllObjects_Implementation() {}

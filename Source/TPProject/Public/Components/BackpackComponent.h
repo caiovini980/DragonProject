@@ -22,7 +22,7 @@ public:
 	void AddToBackpack(ACarriableObject* Object);
 
 	UFUNCTION()
-	bool RemoveTopItemFromBackpack();
+	bool HasRemovedTopItemFromBackpack();
 
 	UFUNCTION()
 	ACarriableObject* GetLastCarriedItem();

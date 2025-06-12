@@ -44,7 +44,7 @@ protected:
 	void OnGrabObject();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnDropObject();
+	void OnDropAllObjects();
 
 	// METHODS
 	UFUNCTION(BlueprintCallable)

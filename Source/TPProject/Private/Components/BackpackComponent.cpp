@@ -33,18 +33,16 @@ void UBackpackComponent::AddToBackpack(ACarriableObject* ObjectToCarry)
 {
 	if(ObjectsCarried.Contains(ObjectToCarry))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Object already on the backpack."))
 		return;
 	}
 	
 	ObjectsCarried.Push(ObjectToCarry);
 }
 
-bool UBackpackComponent::RemoveTopItemFromBackpack()
+bool UBackpackComponent::HasRemovedTopItemFromBackpack()
 {
 	if (ObjectsCarried.Num() <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("There are no objects on the backpack."))
 		return false;
 	}
 
@@ -57,7 +55,6 @@ ACarriableObject* UBackpackComponent::GetLastCarriedItem()
 {
 	if (ObjectsCarried.IsEmpty())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Backpack is empty!"))
 		return nullptr;	
 	}
 	
