@@ -12,3 +12,5 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
+enc_temp_folder
+Plugins/MVVM_Demo
