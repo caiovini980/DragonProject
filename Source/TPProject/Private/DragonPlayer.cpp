@@ -76,11 +76,7 @@ void ADragonPlayer::CarryObject(ACarriableObject* objectToCarry)
 		return; 
 	}
 
-	if (BackpackComponent->GetAllCarriedItems().Num() == 1)
-	{
-		OnGrabObject();
-	}
-	
+	OnGrabObject();
 	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
@@ -95,7 +91,8 @@ void ADragonPlayer::ThrowObject(ACarriableObject* objectToThrow)
 	{
 		OnDropAllObjects();
 	}
-	
+
+	OnDropObject();
 	CharacterMovementComponent->MaxWalkSpeed = PlayerAttributes->Speed.GetCurrentValue();
 }
 
@@ -172,16 +169,18 @@ void ADragonPlayer::HandleInteractTriggered(const FInputActionValue& Value)
 		return;
 	}
 
-	if (ACarriableObject* CarriableObject = TryGetCarriableObject())
+	if (!BackpackComponent->HasReachedMaxCapacity())
 	{
-		CarryObject(CarriableObject);
-		return;
+		if (ACarriableObject* CarriableObject = TryGetCarriableObject())
+		{
+			CarryObject(CarriableObject);
+			return;
+		}
 	}
 
 	if (ACarriableObject* LastCarriedItem = BackpackComponent->GetLastCarriedItem())
 	{
 		ThrowObject(LastCarriedItem);
-		return;
 	}
 }
 
@@ -198,12 +197,6 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 			AnimInstance->Montage_JumpToSection(FName("Attack1"), AttackMontage);
 		}
 	}
-}
-
-// TODO: Remove this
-void ADragonPlayer::SetSpeed(float NewSpeed)
-{
-	CharacterMovementComponent->MaxWalkSpeed = NewSpeed;
 }
 
 ACarriableObject* ADragonPlayer::TryGetCarriableObject() const
@@ -226,6 +219,11 @@ ACarriableObject* ADragonPlayer::TryGetCarriableObject() const
 UAbilitySystemComponent* ADragonPlayer::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+bool ADragonPlayer::CanCarryMoreItems() const
+{
+	return !BackpackComponent->HasReachedMaxCapacity();
 }
 
 // Called every frame
@@ -260,4 +258,6 @@ void ADragonPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 }
 
 void ADragonPlayer::OnGrabObject_Implementation() {}
+
 void ADragonPlayer::OnDropAllObjects_Implementation() {}
+void ADragonPlayer::OnDropObject_Implementation() {}

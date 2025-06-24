@@ -33,6 +33,8 @@ public:
 	UFUNCTION()
 	bool TryRemoveTopItemFromBackpack(AActor* Owner);
 
+	bool HasReachedMaxCapacity() const;
+
 	UFUNCTION()
 	ACarriableObject* GetLastCarriedItem();
 
@@ -56,6 +58,8 @@ protected:
 	FVector CarryPositionOffset{ FVector(0, -20.f, 0.f) }; // Dragon TODO: This isn't working properly
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	bool bReachedMaxCapacity{ false };
 
 public:
 	// Called every frame

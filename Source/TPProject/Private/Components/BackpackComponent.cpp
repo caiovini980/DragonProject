@@ -33,7 +33,7 @@ void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 bool UBackpackComponent::TryAddObjectToBackpack(ACarriableObject* ObjectToCarry, AActor* Owner)
 {
-	if(ObjectsCarried.Contains(ObjectToCarry) || ObjectsCarried.Num() >= MaxCapacity)
+	if(ObjectsCarried.Contains(ObjectToCarry) || bReachedMaxCapacity)
 	{
 		return false;
 	}
@@ -48,9 +48,11 @@ bool UBackpackComponent::TryAddObjectToBackpack(ACarriableObject* ObjectToCarry,
 	{
 		ObjectToCarry->AttachToComponent(Owner->GetComponentByClass<USkeletalMeshComponent>(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CarrySocket"));
 	}
-
+	
 	ObjectsCarried.Push(ObjectToCarry);
+	bReachedMaxCapacity = ObjectsCarried.Num() >= MaxCapacity;
 	OnItemGrabbed.Broadcast(1); // TODO - Magic number
+
 	return true;
 }
 
@@ -62,10 +64,16 @@ bool UBackpackComponent::TryRemoveTopItemFromBackpack(AActor* Owner)
 		LastCarriedItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		ObjectsCarried.Pop(); 
 		OnItemDropped.Broadcast(-1); // TODO - Magic number
+		bReachedMaxCapacity = false;
 		return true;
 	}
 
 	return false;
+}
+
+bool UBackpackComponent::HasReachedMaxCapacity() const
+{
+	return bReachedMaxCapacity;
 }
 
 // TSubclassOf<AActor> UBackpackComponent::GetNextCarriedItem()

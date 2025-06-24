@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "InGameHUD.generated.h"
+#include "InGameHUDViewModel.generated.h"
 
 class UBackpackComponent;
 
 UCLASS()
-class TPPROJECT_API UInGameHUD : public UUserWidget
+class TPPROJECT_API UInGameHUDViewModel : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
 	void NativeConstruct();
 

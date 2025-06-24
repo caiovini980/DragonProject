@@ -6,6 +6,10 @@
 #include "Components/SphereComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "Components/WidgetComponent.h"
+#include "DragonPlayer.h"
+
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ACarriableObject::ACarriableObject()
@@ -22,6 +26,9 @@ ACarriableObject::ACarriableObject()
 
 	PhysicsConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("PhysicsConstraint"));
 	PhysicsConstraint->SetupAttachment(MeshComponent);
+
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("InetractionWidget"));
+	WidgetComponent->SetupAttachment(MeshComponent);
 	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -52,12 +59,30 @@ void ACarriableObject::BeDropped(const FVector& DroppedPosition)
 void ACarriableObject::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnActorBeginOverlap.AddDynamic(this, &ACarriableObject::OnOverlapBegin);
+	OnActorEndOverlap.AddDynamic(this, &ACarriableObject::OnOverlapEnd);
+
+	WidgetComponent->SetVisibility(false);
 }
 
-// Called every frame
-void ACarriableObject::Tick(float DeltaTime)
+void ACarriableObject::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 {
-	Super::Tick(DeltaTime);
+	if (ADragonPlayer* Player = Cast<ADragonPlayer>(OtherActor))
+	{
+		if (Player->CanCarryMoreItems())
+		{
+			WidgetComponent->SetVisibility(true);
+		}
+	}
+}
+
+void ACarriableObject::OnOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+	{
+		WidgetComponent->SetVisibility(false);
+	}
 }
 
 bool ACarriableObject::IsProperlyAttachedTo(AActor* Parent)
@@ -69,6 +94,14 @@ bool ACarriableObject::IsProperlyAttachedTo(AActor* Parent)
 	}
 	
 	return true;
+}
+
+void ACarriableObject::SetInteractionWidgetVisibility(bool IsVisible)
+{
+	if (WidgetComponent)
+	{
+		WidgetComponent->SetVisibility(IsVisible);
+	}
 }
 
 UStaticMeshComponent* ACarriableObject::GetActorMesh() const

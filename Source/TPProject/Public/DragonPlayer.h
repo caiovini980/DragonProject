@@ -35,6 +35,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	bool CanCarryMoreItems() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -45,12 +47,12 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnDropAllObjects();
-
-	// METHODS
-	UFUNCTION(BlueprintCallable)
-	void SetSpeed(float NewSpeed);
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void OnDropObject();
 
 	// VARIABLES
+	
 	
 	// COMPONENTS
 	UPROPERTY(BlueprintReadOnly, Category="Components")
@@ -109,9 +111,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Attack")
 	bool bCanAttack{ true };
-
-	UPROPERTY(EditAnywhere, Category = "Interact")
-	float DistanceToInteract{ 0 };
 
 	// ANIMATION MONTAGES
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
