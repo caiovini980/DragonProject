@@ -45,7 +45,6 @@ ADragonPlayer::ADragonPlayer()
 	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	PlayerCamera->SetupAttachment(CameraArm);
 
-	//AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
 	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("Backpack"));
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilityComponent"));
@@ -192,7 +191,6 @@ void ADragonPlayer::Attack(const FInputActionValue& Value)
 		
 		if (AnimInstance && AttackMontage && CharacterMovementComponent)
 		{
-			//CharacterMovementComponent->MaxWalkSpeed = 300;
 			AnimInstance->Montage_Play(AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName("Attack1"), AttackMontage);
 		}
@@ -224,6 +222,16 @@ UAbilitySystemComponent* ADragonPlayer::GetAbilitySystemComponent() const
 bool ADragonPlayer::CanCarryMoreItems() const
 {
 	return !BackpackComponent->HasReachedMaxCapacity();
+}
+
+int32 ADragonPlayer::GetMaxBackpackCapacity() const
+{
+	return BackpackComponent->GetMaxCapacity();
+}
+
+int32 ADragonPlayer::GetCurrentBackpackCapacity() const
+{
+	return BackpackComponent->GetCurrentCapacity();
 }
 
 // Called every frame

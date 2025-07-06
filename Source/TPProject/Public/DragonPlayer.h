@@ -37,19 +37,25 @@ public:
 
 	bool CanCarryMoreItems() const;
 
+	UFUNCTION(BlueprintCallable)
+	int32 GetMaxBackpackCapacity() const;
+	UFUNCTION(BlueprintCallable)
+	int32 GetCurrentBackpackCapacity() const;
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void OnGrabObject();
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void OnDropObject();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	// EVENTS
 	UFUNCTION(BlueprintNativeEvent)
-	void OnGrabObject();
-
-	UFUNCTION(BlueprintNativeEvent)
 	void OnDropAllObjects();
 	
-	UFUNCTION(BlueprintNativeEvent)
-	void OnDropObject();
 
 	// VARIABLES
 	
@@ -67,7 +73,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UCharacterMovementComponent* CharacterMovementComponent;
 
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Components")
 	UBackpackComponent* BackpackComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
@@ -100,7 +106,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AttackAction;
-
+	
 private:
 	// VARIABLES
 	UPROPERTY(VisibleAnywhere, Category = "Joystick")
